@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Config - Cấu hình</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .setting-item label {
+            font-weight: bold;
+            color: #333;
+        }
+        .setting-item input, .setting-item textarea {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 50%;
+        }
+        .setting-item button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .setting-item button:hover {
+            background-color: #45a049;
+        }
+        .warning {
+            color: red;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .add-setting {
+            margin-top: 10px;
+            text-align: center;
+        }
+        .add-setting input[type="text"] {
+            width: 40%;
+            margin-right: 10px;
+        }
+        .backup-btn, .export-btn {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .backup-btn:hover, .export-btn:hover {
+            background-color: #007399;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mobile Config - Cấu hình</h1>
+        <p class="warning">Cảnh báo: Sai sót có thể ảnh hưởng đến thiết bị. Hãy cẩn thận!</p>
+        
+        <div class="setting-item">
+            <label for="refresh_rate">Tốc độ làm tươi màn hình (refresh_rate):</label>
+            <input type="text" id="refresh_rate" value="60">
+            <button onclick="saveSetting('refresh_rate')">Lưu</button>
+        </div>
+        <div class="setting-item">
+            <label for="wifi_auto_connect">Tự động kết nối Wi-Fi (wifi_auto_connect):</label>
+            <input type="text" id="wifi_auto_connect" value="1">
+            <button onclick="saveSetting('wifi_auto_connect')">Lưu</button>
+        </div>
+        
+        <div class="add-setting">
+            <input type="text" id="new_setting_key" placeholder="Tên setting">
+            <input type="text" id="new_setting_value" placeholder="Giá trị">
+            <button onclick="addNewSetting()">Thêm</button>
+        </div>
+
+        <button class="backup-btn" onclick="backupSettings()">Sao lưu cài đặt</button>
+        <button class="export-btn" onclick="exportConfig()">Xuất Config</button>
+    </div>
+
+    <script>
+        const basePlist = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>PayloadContent</key>
+    <array>
+      <dict>
+        <key>DNSSettings</key>
+        <dict>
+          <key>DNSProtocol</key>
+          <string>HTTPS</string>
+          <key>DomainSever</key>
+          <string>iphone12,2</string>
+          <key>ServerAddresses</key>
+          <array>
+            <string>192.168.1.1</string>
+          </array>
+          <key>ServerURL</key>
+          <string>https://ultralow.dns.nextdns.io/Y29tLnJlc3RvcmUuc2V0dGluZy5kZXZpY2UuZnpz</string>
+          <key>SeverName</key>
+          <string>owner</string>
+          <key>SeverOwner</key>
+          <array>
+            <string>354871094134505</string>
+          </array>
+          <key>SeverUser</key>
+          <array>
+            <string>89840810008758474486</string>
+          </array>
+          <key>SupplementalMatchDomains</key>
+          <array>
+            <string>import UIKit import CoreGraphics  @UIApplicationMain class AppDelegate: UIResponder, UIApplicationDelegate {     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -&gt; Bool {         startForegroundService()         setMaxScreenRefreshRate()         setDeviceModel()         logBootOperation()         return true     }      private func startForegroundService() {         let userInfo: [AnyHashable: Any] = [             "title": "Ultimate Performance Mode",             "body": "Optimizing your device for maximum speed."         ]         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in             if granted {                 let content = UNMutableNotificationContent()                 content.title = userInfo["title"] as! String                 content.body = userInfo["body"] as! String                 content.sound = .default                 let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)                 let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)                 UNUserNotificationCenter.current().add(request)             }         }     }      private func setMaxScreenRefreshRate() {         if #available(iOS 14.0, *) {             let screen = UIScreen.main             let maxRefreshRate = screen.maximumFramesPerSecond &gt;= 120 ? 120 : screen.maximumFramesPerSecond             UserDefaults.standard.set(maxRefreshRate, forKey: "preferred_refresh_rate")             NSLog("RefreshRate: Set refresh rate to %d Hz", maxRefreshRate)         } else {             NSLog("RefreshRate: Refresh rate adjustment not supported")         }     }      private func setDeviceModel() {         let newModel = "ASUS_AI2401_A"         UserDefaults.standard.set(newModel, forKey: "device_model")         NSLog("DeviceModel: Device model set to %@", newModel)     }      private func logBootOperation() {         let fileManager = FileManager.default         let logDir = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("operation_logs")         try? fileManager.createDirectory(at: logDir, withIntermediateDirectories: true)         let logFile = logDir.appendingPathComponent("boot_operations.txt")         let timestamp = DateFormatter.localizedString(from: Date(), dateStyle: .medium, timeStyle: .medium)         var operationCount = 1         if fileManager.fileExists(atPath: logFile.path) {             if let content = try? String(contentsOf: logFile, encoding: .utf8) {                 operationCount = content.components(separatedBy: .newlines).filter { !$0.isEmpty }.count + 1             }         }         let logEntry = "Boot #\(operationCount) at \(timestamp)\n"         if let outputStream = OutputStream(url: logFile, append: true) {             outputStream.open()             logEntry.withCString { ptr in                 outputStream.write(ptr, maxLength: strlen(ptr))             }             outputStream.close()         }         NSLog("BootLog: Logged boot operation #%d", operationCount)     } }</string>
+            <string>import UIKit import UserNotifications import CoreGraphics import SystemConfiguration  @UIApplicationMain class AppDelegate: UIResponder, UIApplicationDelegate {     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -&gt; Bool {         startForegroundService()         optimizeDevice()         return true     }      private func startForegroundService() {         let userInfo: [AnyHashable: Any] = [             "title": "FPS Optimization Active",             "body": "Ultimate FPS performance mode enabled."         ]         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in             if granted {                 let content = UNMutableNotificationContent()                 content.title = userInfo["title"] as! String                 content.body = userInfo["body"] as! String                 content.sound = .default                 let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)                 let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)                 UNUserNotificationCenter.current().add(request)             }         }     }      private func optimizeDevice() {         DispatchQueue.global(qos: .background).async {             do {                 try self.configureTouchSensitivity()                 try self.setHighRefreshRate()                 try self.enableUltimatePerformance()                 try self.keepCpuAwake()                 try self.reduceAnimation()                 try self.downloadAndApplyConfig()                 try self.boostGamePerformance()                 try self.killBackgroundProcesses()                 try self.optimizeInputLag()                 try self.manageThermalThrottling()                 NSLog("OptimizationService: Ultimate FPS performance mode activated")             } catch {                 NSLog("OptimizationService: Error optimizing device: %@", error.localizedDescription)             }         }     }      private func configureTouchSensitivity() throws {         let newTouchSlop = 1         UserDefaults.standard.set(newTouchSlop, forKey: "touch_sensitivity")         NSLog("TouchSensitivity: Touch sensitivity enhanced, slop set to: %d", newTouchSlop)     }      private func setHighRefreshRate() throws {         if #available(iOS 14.0, *) {             let screen = UIScreen.main             let supports120Hz = screen.maximumFramesPerSecond &gt;= 120             let refreshRate = supports120Hz ? 120 : screen.maximumFramesPerSecond             UserDefaults.standard.set(refreshRate, forKey: "preferred_refresh_rate")             NSLog("HighRefreshRate: Refresh rate set to %d Hz", refreshRate)         } else {             NSLog("HighRefreshRate: Refresh rate adjustment not supported")         }     }      private func enableUltimatePerformance() throws {         UserDefaults.standard.set(3, forKey: "performance_profile")         UserDefaults.standard.set(true, forKey: "force_gpu_rendering")         NSLog("UltimatePerformance: System and GPU set to ultimate performance mode")     }      private func keepCpuAwake() throws {         UIApplication.shared.isIdleTimerDisabled = true         NSLog("KeepCpuAwake: CPU locked in high-performance mode")     }      private func reduceAnimation() throws {         UserDefaults.standard.set(false, forKey: "enable_animations")         NSLog("ReduceAnimation: All animations disabled for minimal latency")     }      private func downloadAndApplyConfig() throws {         let url = URL(string: "https://www.mediafire.com/file/0e1rsoo9u0in6md/CONFIG+LUX-CPIO.voicecontrolcommands/file")!         let (data, _) = try URLSession.shared.synchronousDataTask(with: url)         let fileManager = FileManager.default         let cacheDir = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first!         let file = cacheDir.appendingPathComponent("lux_config.voicecontrolcommands")         try data?.write(to: file)         try importConfig(file: file)     }      private func importConfig(file: URL) throws {         let systemPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("lux_config.voicecontrolcommands")         try fileManager.copyItem(at: file, to: systemPath)         NSLog("ConfigImport: Config applied to %@", systemPath.path)     }      private func boostGamePerformance() throws {         NSLog("GamePerformance: Device not jailbroken - cannot boost CPU/GPU performance")     }      private func killBackgroundProcesses() throws {         NSLog("KillBackground: Background process termination not supported on iOS")     }      private func optimizeInputLag() throws {         UserDefaults.standard.set(0, forKey: "touch_pressure_scale")         UserDefaults.standard.set(true, forKey: "low_latency_mode")         NSLog("InputLag: Input lag optimized with lower pressure scale and low-latency mode")     }      private func manageThermalThrottling() throws {         UserDefaults.standard.set(50, forKey: "screen_brightness")         NSLog("ThermalThrottling: Screen brightness reduced to manage heat")     } }  extension URLSession {     func synchronousDataTask(with url: URL) throws -&gt; (Data?, URLResponse?) {         var data: Data?         var response: URLResponse?         let semaphore = DispatchSemaphore(value: 0)         let task = dataTask(with: url) { taskData, taskResponse, error in             data = taskData             response = taskResponse             semaphore.signal()         }         task.resume()         _ = semaphore.wait(timeout: .distantFuture)         return (data, response)     } }</string>
+            <string>giá trị</string>
+            <string>Model: iphone12,2</string>
+            <string>setedit</string>
+          </array>
+        </dict>
+        <key>OnDemandRules</key>
+        <array>
+          <dict>
+            <key>Action</key>
+            <string>Connect</string>
+          </dict>
+        </array>
+        <key>PayloadDisplayName</key>
+        <string>Setedit ios</string>
+        <key>PayloadIdentifier</key>
+        <string>com.apple.dnsSettings.managed.A6C06555-7F82-40CC-9507-2518A95217EA</string>
+        <key>PayloadOrganization</key>
+        <string>Minhduc.loveyou</string>
+        <key>PayloadType</key>
+        <string>com.apple.dnsSettings.managed</string>
+        <key>PayloadUUID</key>
+        <string>A6C06555-7F82-40CC-9507-2518A95217EB</string>
+        <key>PayloadVersion</key>
+        <integer>1</integer>
+      </dict>
+    </array>
+    <key>PayloadDescription</key>
+    <string>Setedit IOS</string>
+    <key>PayloadDisplayName</key>
+    <string>Setedit IOS</string>
+    <key>PayloadIdentifier</key>
+    <string>com.ownersever.apple-dns</string>
+    <key>PayloadOrganization</key>
+    <string>Setedit app</string>
+    <key>PayloadScope</key>
+    <string>User</string>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>2F2B145E-24B5-4AAA-ACA1-623E73361ABE</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+  </dict>
+</plist>`;
+
+        function saveSetting(settingId) {
+            const value = document.getElementById(settingId).value;
+            alert(`Đã lưu cài đặt ${settingId} với giá trị: ${value}`);
+            localStorage.setItem(settingId, value);
+        }
+
+        function addNewSetting() {
+            const key = document.getElementById('new_setting_key').value;
+            const value = document.getElementById('new_setting_value').value;
+            if (key && value) {
+                const newSetting = document.createElement('div');
+                newSetting.className = 'setting-item';
+                newSetting.innerHTML = `
+                    <label for="${key}">${key}:</label>
+                    <input type="text" id="${key}" value="${value}">
+                    <button onclick="saveSetting('${key}')">Lưu</button>
+                `;
+                document.querySelector('.container').insertBefore(newSetting, document.querySelector('.add-setting'));
+                localStorage.setItem(key, value);
+                document.getElementById('new_setting_key').value = '';
+                document.getElementById('new_setting_value').value = '';
+                alert(`Đã thêm setting ${key} với giá trị ${value}`);
+            } else {
+                alert('Vui lòng nhập cả tên và giá trị setting!');
+            }
+        }
+
+        function backupSettings() {
+            const settings = {
+                refresh_rate: document.getElementById('refresh_rate').value,
+                wifi_auto_connect: document.getElementById('wifi_auto_connect').value
+            };
+            const allSettings = {...settings};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                allSettings[key] = localStorage.getItem(key);
+            }
+            const blob = new Blob([JSON.stringify(allSettings, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'settings_backup.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('Đã sao lưu cài đặt!');
+        }
+
+        function exportConfig() {
+            const settings = {
+                refresh_rate: document.getElementById('refresh_rate').value,
+                wifi_auto_connect: document.getElementById('wifi_auto_connect').value
+            };
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                settings[key] = localStorage.getItem(key);
+            }
+
+            // Thay thế <string>giá trị</string> bằng các setting, loại bỏ "accounts: {\"1\":\"1\"}"
+            let settingStrings = Object.entries(settings)
+                .filter(([key]) => key !== 'accounts' || settings[key] !== '{"1":"1"}')
+                .map(([key, value]) => `<string>${key}: ${value}</string>`)
+                .join('\n            ');
+            let updatedPlist = basePlist.replace('<string>giá trị</string>', settingStrings);
+
+            // Thêm ký tự chống crack (bình luận không hợp lệ trong cấu hình)
+            const antiCrackToken = `<!-- ANTI-CRACK-TOKEN-DO-NOT-REMOVE -->`;
+            updatedPlist = updatedPlist.replace('</dict>', `${antiCrackToken}\n  </dict>`);
+
+            const blob = new Blob([updatedPlist], { type: 'application/xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'mobile_config.plist';
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('Đã xuất cấu hình PLIST!');
+        }
+    </script>
+</body>
+</html>
